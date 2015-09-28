@@ -1,0 +1,23 @@
+#!/bin/bash
+time=$(date +'%Y-%m-%d %H:%M:%S')
+user=`id -un`
+echo "******查询可重启线上程序的账号信息******"
+read -p "请输入工号：" number
+    if [ ! -n $number ];then
+       echo "工号未输入，已退出~"
+       exit 0
+    fi
+    if [ $number != "1012079" -a $number != "1304333" -a $number != "1505480" -a $number != "1112196" -a $number != "1506493" -a $number != "1507502" ];then
+       echo "非法工号，已退出~"
+       exit 0
+    fi
+a=(c d e A B C  0 1 2 3 4 5 6 7 8 9)
+password=`for ((i=0;i<8;i++));do echo -n ${a[$RANDOM % ${#a[@]}]};done`
+echo "用户：$user , 调用了查询yunwei密码,时间：$time" >>/hskj/script/log/chpasswd.log
+expect -c "set timeout -1;
+spawn su - root
+expect -re "密码：" {send \"hskjxt@)!$\r\";exp_continue}  -re "]#" {send \"echo yunwei:$password |chpasswd && su - $user \r\";exp_continue} -re "请选择" {send \"echo 服务器：192.168.120.17  登录账号：yunwei  登录密码：$password \r\"};
+interact"
+curl --data "account=yunwei&passwd=123&emailwarning=1&email=jinyalin@hongshutech.com&smswarning=1&mobile=13261289750&content=$user调用了跳板系统账号，新密码为：$password，时间：$time" http://yj.baiwutong.com:8180/PlateWarning
+
+
